@@ -3,7 +3,7 @@ plugins {
 }
 
 group = 'com.github.thohd-oeg'
-version = '1.0.19'
+version = '1.0.20'
 
 repositories {
     google()
@@ -49,7 +49,7 @@ publishing {
             }
             groupId = 'com.github.thohd-oeg'
             artifactId = 'android-sdk'
-            version = '1.0.19'
+            version = '1.0.20'
             
             pom.withXml {
                 def dependenciesNode = asNode().appendNode('dependencies')
