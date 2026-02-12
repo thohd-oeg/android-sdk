@@ -75,10 +75,8 @@ Create `src/main/assets/oeg_config.json` with your game's configuration:
 Initialize the SDK in your `Application` class or `MainActivity`:
 
 ```kotlin
-OEGAuth.Builder(context)
-    .gameId(14)
-    .packageName("com.your.game.package")
-    .build()
+// Automatically loads config from assets/oeg_config.json
+OEGAuth.Builder(context).build()
 
 // Initialize Payment System
 OEGPayment.initialize(context)
