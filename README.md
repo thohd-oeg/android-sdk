@@ -1,15 +1,10 @@
 # OEG Frameworks SDK Developer Guide
 
-Cross-platform mobile SDK for **Android**, **iOS**, and **Unity**, providing **Authentication**, **User Management**, **Payments**, and **Push Notifications**.
+Cross-platform mobile SDK supporting **Android**, **iOS**, and **Unity**, focused on **Authentication, User Management, and Payments**.
 
-## 🚀 Features
-
-*   **Authentication**: Login, Register, Social Login (Google, Facebook), Guest Play.
-*   **User Management**: Profile Update, Change Password, Account Merging.
-*   **Payments**: In-App Purchases (Google Play / App Store) with server-side verification.
-*   **Push Notifications**: Firebase Cloud Messaging (FCM) integration.
-*   **Configuration**: Remote Config support with local caching.
-*   **Security**: Encrypted storage for sensitive data.
+This SDK provides two integration paths:
+1.  **Legacy Integration (Recommended for speed)**: Uses a built-in UI for Login, Profile, and Payments.
+2.  **V2 API Integration (Advanced)**: Provides direct API access for building custom UIs.
 
 ---
 
@@ -17,164 +12,125 @@ Cross-platform mobile SDK for **Android**, **iOS**, and **Unity**, providing **A
 
 ### Android
 
-1.  Copy the `sdk-release.aar` to your `libs/` folder.
-2.  Add dependencies in your module's `build.gradle.kts`:
+1.  Copy the `sdk-release.aar` (or project dependency) to your project.
+2.  Add dependencies in `build.gradle`:
 
 ```kotlin
 dependencies {
     implementation(files("libs/sdk-release.aar"))
-    
-    // Core Dependencies
     implementation("com.google.code.gson:gson:2.10.1")
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
-    implementation("androidx.security:security-crypto:1.1.0-alpha06")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
-
-    // Social Login (Google & Facebook)
-    implementation("androidx.credentials:credentials:1.3.0")
-    implementation("androidx.credentials:credentials-play-services-auth:1.3.0")
-    implementation("com.google.android.libraries.identity.googleid:googleid:1.1.0")
-    implementation("com.facebook.android:facebook-login:16.0.0")
-
-    // Payments & Push
-    implementation("com.android.billingclient:billing-ktx:6.0.0")
-    implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
-    implementation("com.google.firebase:firebase-messaging-ktx")
+    // ... other dependencies (OkHttp, Coroutines, etc.)
 }
 ```
 
+### iOS
+
+1.  Add the package via Swift Package Manager (SPM).
+2.  Repository URL: `[Git Repo URL]` (or local path).
+3.  Select `OEGFrameworks` library.
+
 ---
 
-## 2. Configuration (`assets/oeg_config.json`)
+## 2. Configuration (`oeg_config.json`)
 
-Create `src/main/assets/oeg_config.json` with your game's configuration:
+The SDK requires a configuration file to initialize.
+
+**Location:**
+*   **Android:** `src/main/assets/oeg_config.json`
+*   **iOS:** Add to your App Bundle resources.
+
+**Format:**
 
 ```json
 {
     "core": {
-        "game_id": 14,
-        "api_base_url": "https://api-sdk-game.oeg.vn/",
-        "notification_channel_id": "default_channel"
+        "game_id": 44,
+        "api_base_url": "https://dev-api-sdk-game.oeg.vn/",
+        "user_info_email_required": true,
+        "notification_channel_id": "default",
+        "debug_env": true
     },
     "sns": {
-        "google_web_client_id": "YOUR_WEB_CLIENT_ID.apps.googleusercontent.com",
         "facebook_app_id": "YOUR_FB_APP_ID",
-        "facebook_client_token": "YOUR_FB_CLIENT_TOKEN"
+        "facebook_client_token": "YOUR_FB_CLIENT_TOKEN",
+        "google_web_client_id": "YOUR_GOOGLE_WEB_CLIENT_ID"
+    },
+    "tracking": {
+        "adjust_app_token": "YOUR_ADJUST_TOKEN",
+        "adjust_environment": "sandbox"
     }
 }
 ```
 
 ---
 
-## 3. Usage (Android V2)
+## 3. Integration Options
 
-### Initialization
+### Option A: Legacy Integration (Built-in UI)
 
-Initialize the SDK in your `Application` class or `MainActivity`:
+Use this if you want a ready-made UI for login, profile management, and payments.
 
+#### Android
 ```kotlin
-// Automatically loads config from assets/oeg_config.json
-OEGAuth.Builder(context).build()
+// Initialize in Application or MainActivity
+OegSdk.init(context)
 
-// Initialize Payment System
-OEGPayment.initialize(context)
+// Show Login Screen
+OegSdk.showLogin(this) { 
+    // Callback when login screen closes
+    // Check OEGAuth.currentUser for status
+}
+
+// Show User Profile / Update Info
+OegSdk.showUpdateUserInfo(this)
 ```
 
-### Authentication
+#### iOS
+```swift
+// Initialize
+OegSdkV2.shared.initialize()
 
-**Login:**
+// Show Login (SwiftUI / UIKit adapter required)
+// ... (Refer to iOS Sample App)
+```
+
+### Option B: V2 API Integration (Custom UI)
+
+Use this if you want to build your own UI and just use the SDK for logic.
+
+#### Android
 ```kotlin
+// 1. Initialize
+val auth = OEGAuth.Builder(context).build()
+
+// 2. Login
 OEGAuth.login("username", "password") { result ->
     when (result) {
         is AuthResult.Success -> {
-            val token = result.user.token
             println("Logged in: ${result.user.displayName}")
         }
-        is AuthResult.Error -> println("Login failed: ${result.message}")
+        is AuthResult.Error -> {
+            println("Login failed: ${result.message}")
+        }
     }
 }
-```
 
-**Register:**
-```kotlin
-OEGAuth.register("Full Name", "username", "password") { result ->
-    // Handle result
-}
-```
-
-**Play Now (Guest):**
-```kotlin
-OEGAuth.playNow { result ->
-    // Handle guest login
-}
-```
-
-**Social Login (Google/Facebook):**
-```kotlin
-// Get token/accessToken from Google/Facebook SDKs, then:
-OEGAuth.socialLogin(SocialProvider.GOOGLE, idToken) { result ->
-    // Handle social login
-}
-```
-
-**Logout:**
-```kotlin
-OEGAuth.logout()
-```
-
-### User Management
-
-**Update Profile:**
-```kotlin
+// 3. Update Profile
 OEGAuth.updateProfile(
     email = "new@email.com",
-    birthday = "1990-01-01",
     displayName = "New Name"
 ) { result ->
     // Handle result
 }
-```
 
-**Change Password:**
-```kotlin
-OEGAuth.changePassword(oldPass, newPass) { result ->
+// 4. Change Password
+OEGAuth.changePassword(
+    oldPass = "current123",
+    newPass = "new123"
+) { result -> 
     // Handle result
-}
-```
-
-**Check Verification Status:**
-```kotlin
-if (OEGAuth.needsVerification()) {
-    // Prompt user to verify email/phone
-}
-```
-
-### Payments (IAP)
-
-**Purchase a Product:**
-```kotlin
-OEGPayment.purchase(activity, productDetails) { result ->
-    when (result) {
-        is PurchaseResult.Success -> {
-            println("Purchase successful: ${result.purchase.orderId}")
-            // Optional: Consume if it's a consumable item
-            OEGPayment.consumePurchase(result.purchase)
-        }
-        is PurchaseResult.Cancelled -> println("User cancelled")
-        is PurchaseResult.Error -> println("Error: ${result.message}")
-    }
-}
-```
-
-### Push Notifications
-
-**Get Device Token:**
-```kotlin
-lifecycleScope.launch {
-    val token = OEGPush.getDeviceToken()
-    // Send to your backend if needed
 }
 ```
 
@@ -182,28 +138,34 @@ lifecycleScope.launch {
 
 ## 4. API Reference
 
-### `OEGAuth`
-| Method | Description |
-|--------|-------------|
-| `login`, `register`, `playNow` | Basic authentication methods. |
-| `socialLogin` | Authenticate using Google or Facebook tokens. |
-| `logout` | Clears local session and cancels pending tasks. |
-| `updateProfile` | Updates user attributes (email, phone, etc.). |
-| `changePassword` | Updates account password. |
-| `merge`, `mergeSocial` | Merges a guest account into a registered/social account. |
-| `isEmailVerified`, `isPhoneVerified` | Checks verification status. |
-| `getCurrentUser`, `getToken`, `isLoggedIn` | Session state helpers. |
+### Authentication (`OEGAuth`)
 
-### `OEGPayment`
-| Method | Description |
-|--------|-------------|
-| `initialize` | Sets up Google Billing Client. |
-| `purchase` | Starts the purchase flow. |
-| `queryProducts` | Fetches product details from Google Play. |
-| `consumePurchase` | Consumes a purchase (makes it available to buy again). |
+*   `login(username, password, callback)`
+*   `register(username, password, email, ..., callback)`
+*   `socialLogin(type, token, callback)`
+*   `logout()`
+*   `currentUser`: Returns the currently logged-in `AuthUser` object (or null).
 
-### `OEGPush`
-| Method | Description |
-|--------|-------------|
-| `getDeviceToken` | Returns the FCM device token. |
-| `subscribeToTopic` | Subscribes the device to an FCM topic. |
+### User Management
+
+*   `updateProfile(data, callback)`: Updates user info (Email, Phone, DOB, etc.).
+*   `changePassword(old, new, callback)`: Changes account password.
+*   `verifyEmail(...)` / `verifyPhone(...)`: OTP verification flows.
+
+### Payment (`OEGPayment`)
+
+*   `purchase(productId, callback)`: Initiates IAP flow (Google Play / App Store).
+
+---
+
+## 5. Troubleshooting
+
+**Common Issues:**
+
+*   **404 on Update Profile:** Ensure you are using the latest SDK version. (Fixed issue with HTTP method).
+*   **400 on Change Password:** Ensure `confirm_password` matches `new_password`.
+*   **Missing Config:** The app will crash if `oeg_config.json` is missing or invalid. Check Logcat/Console for "Config not found".
+
+## 6. Sample Apps
+
+Check the `android/sample` and `ios/SampleProject` directories for full working examples of both Legacy and V2 integrations.
