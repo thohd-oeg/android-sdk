@@ -28,7 +28,7 @@ This SDK provides two integration paths:
 2.  Add the dependency in your module's `build.gradle`:
     ```kotlin
     dependencies {
-        implementation("com.github.thohd-oeg:android-sdk:1.0.20") // Check JitPack for latest version
+        implementation("com.github.thohd-oeg:android-sdk:1.0.19") // Check JitPack for latest version
     }
     ```
 
