@@ -12,16 +12,35 @@ This SDK provides two integration paths:
 
 ### Android
 
-1.  Copy the `sdk-release.aar` (or project dependency) to your project.
+#### Option 1: JitPack (Recommended)
+
+1.  Add JitPack to your project's `settings.gradle` (or root `build.gradle`):
+    ```kotlin
+    dependencyResolutionManagement {
+        repositories {
+            google()
+            mavenCentral()
+            maven { url = uri("https://jitpack.io") }
+        }
+    }
+    ```
+
+2.  Add the dependency in your module's `build.gradle`:
+    ```kotlin
+    dependencies {
+        implementation("com.github.thohd-oeg:android-sdk:1.0.19") // Check JitPack for latest version
+    }
+    ```
+
+#### Option 2: Manual AAR
+
+1.  Copy the `oeg-sdk-android.aar` to your project's `libs` folder.
 2.  Add dependencies in `build.gradle`:
 
 ```kotlin
 dependencies {
-    implementation(files("libs/sdk-release.aar"))
-    implementation("com.google.code.gson:gson:2.10.1")
-    implementation("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-    // ... other dependencies (OkHttp, Coroutines, etc.)
+    implementation(files("libs/oeg-sdk-android.aar"))
+    // ... (You must manually add all transitive dependencies listed in the POM)
 }
 ```
 
