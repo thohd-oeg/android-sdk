@@ -1,0 +1,4 @@
+jdk:
+  - openjdk17
+install:
+  - mvn install:install-file -Dfile=oeg-sdk-android.aar -DpomFile=pom.xml
