@@ -25,7 +25,7 @@ Next, add the SDK to your app-level `build.gradle.kts` (or `build.gradle`):
 ```kotlin title="app/build.gradle.kts"
 dependencies {
     // Core OEG SDK
-    implementation("com.github.thohd-oeg:android-sdk:1.0.36")
+    implementation("com.github.thohd-oeg:android-sdk:1.0.41")
     
     // (Optional) Adjust analytics if required by your marketing team
     implementation("com.adjust.sdk:adjust-android:5.0.0")
